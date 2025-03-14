@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحميل فيديوهات يوتيوب</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    
+    <script>
+        function getFormats() {
+            let url = document.getElementById("video_url").value;
+            if (!url) {
+                alert("يرجى إدخال رابط الفيديو");
+                return;
+            }
+
+            fetch(`/get_formats?url=${encodeURIComponent(url)}`)
+            .then(response => response.json())
+            .then(data => {
+                let formatSelect = document.getElementById("formats");
+                formatSelect.innerHTML = "";
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                data.formats.forEach(format => {
+                    let option = document.createElement("option");
+                    option.value = format.format_id;
+                    option.text = `${format.resolution} (${format.ext})`;
+                    formatSelect.appendChild(option);
+                });
+
+                document.getElementById("download_section").style.display = "block";
+            })
+            .catch(error => alert("حدث خطأ أثناء جلب الجودات"));
+        }
+
+        function downloadVideo() {
+            let url = document.getElementById("video_url").value;
+            let format = document.getElementById("formats").value;
+            if (!format) {
+                alert("يرجى اختيار الجودة");
+                return;
+            }
+
+            window.location.href = `/download?url=${encodeURIComponent(url)}&format=${format}`;
+        }
+    </script>
+</head>
+<body>
+    <h2>تحميل فيديو يوتيوب</h2>
+    <input type="text" id="video_url" placeholder="أدخل رابط الفيديو">
+    <button onclick="getFormats()">عرض الجودات</button>
+
+    <div id="download_section" style="display: none;">
+        <h3>اختر الجودة:</h3>
+        <select id="formats"></select>
+        <button onclick="downloadVideo()">تحميل</button>
+    </div>
+</body>
+</html>
+
+
